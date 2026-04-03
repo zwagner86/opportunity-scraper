@@ -1,0 +1,52 @@
+{
+  "name": "Opportunity Finder - Cluster Refresh",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manualTriggerClusters",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        260,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/api/clusters/refresh",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={}",
+        "options": {}
+      },
+      "id": "httpClusters",
+      "name": "Refresh Clusters",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Refresh Clusters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {},
+  "staticData": null,
+  "tags": []
+}
+

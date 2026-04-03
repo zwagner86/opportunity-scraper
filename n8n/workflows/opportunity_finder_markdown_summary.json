@@ -1,0 +1,52 @@
+{
+  "name": "Opportunity Finder - Markdown Summary",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manualTriggerSummary",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        260,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/api/summaries/markdown",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"limit\": 20, \"min_score\": 5.5}",
+        "options": {}
+      },
+      "id": "httpMarkdownSummary",
+      "name": "Generate Markdown Summary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Generate Markdown Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {},
+  "staticData": null,
+  "tags": []
+}
+

@@ -1,0 +1,52 @@
+{
+  "name": "Opportunity Finder - Discourse Only",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manualTriggerDiscourse",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        260,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/api/runs/ingest",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"sources\": [\"discourse\"]}",
+        "options": {}
+      },
+      "id": "httpDiscourse",
+      "name": "Run Discourse Ingestion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Run Discourse Ingestion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {},
+  "staticData": null,
+  "tags": []
+}
+

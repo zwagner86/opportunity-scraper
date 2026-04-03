@@ -1,0 +1,110 @@
+{
+  "name": "Opportunity Finder - All Sources",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manualTriggerAll",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        260,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/api/runs/ingest",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"sources\": null}",
+        "options": {}
+      },
+      "id": "httpRunAllSources",
+      "name": "Run All Sources",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/api/clusters/refresh",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={}",
+        "options": {}
+      },
+      "id": "httpRefreshClusters",
+      "name": "Refresh Clusters",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        820,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/api/summaries/markdown",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"limit\": 20, \"min_score\": 5.5}",
+        "options": {}
+      },
+      "id": "httpSummary",
+      "name": "Generate Markdown Summary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        280
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Run All Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run All Sources": {
+      "main": [
+        [
+          {
+            "node": "Refresh Clusters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Refresh Clusters": {
+      "main": [
+        [
+          {
+            "node": "Generate Markdown Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {},
+  "staticData": null,
+  "tags": []
+}
+

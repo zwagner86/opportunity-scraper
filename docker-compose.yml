@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    container_name: opportunity-finder-api
+    env_file:
+      - .env
+    environment:
+      OPPORTUNITY_ENV: docker
+      OPPORTUNITY_DB_PATH: /data/opportunity_finder.db
+      OPPORTUNITY_CONFIG_DIR: /app/configs
+      PYTHONPATH: /app/services/api:/app/services/shared
+    volumes:
+      - ./configs:/app/configs
+      - ./data:/data
+      - ./services/api:/app/services/api
+      - ./services/shared:/app/services/shared
+    ports:
+      - "8000:8000"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: docker/dashboard/Dockerfile
+    container_name: opportunity-finder-dashboard
+    env_file:
+      - .env
+    environment:
+      OPPORTUNITY_API_BASE_URL: http://api:8000/api
+      PYTHONPATH: /app/services/dashboard:/app/services/shared
+    volumes:
+      - ./services/dashboard:/app/services/dashboard
+      - ./services/shared:/app/services/shared
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+    command: streamlit run app/main.py --server.address=0.0.0.0 --server.port=8501
+
+  n8n:
+    image: n8nio/n8n:1.88.0
+    container_name: opportunity-finder-n8n
+    environment:
+      N8N_HOST: localhost
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
+      N8N_SECURE_COOKIE: "false"
+      N8N_EDITOR_BASE_URL: http://localhost:5678
+      WEBHOOK_URL: http://localhost:5678
+      GENERIC_TIMEZONE: America/Chicago
+    ports:
+      - "5678:5678"
+    volumes:
+      - ./n8n:/files
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - api
+
+volumes:
+  n8n_data:
+

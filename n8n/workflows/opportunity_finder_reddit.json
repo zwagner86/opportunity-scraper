@@ -1,0 +1,52 @@
+{
+  "name": "Opportunity Finder - Reddit Only",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manualTriggerReddit",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        260,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/api/runs/ingest",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"sources\": [\"reddit\"]}",
+        "options": {}
+      },
+      "id": "httpReddit",
+      "name": "Run Reddit Ingestion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Run Reddit Ingestion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {},
+  "staticData": null,
+  "tags": []
+}
+

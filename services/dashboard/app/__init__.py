@@ -1,0 +1,2 @@
+"""Opportunity Finder Streamlit dashboard."""
+

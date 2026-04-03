@@ -1,0 +1,56 @@
+enabled_sources:
+  - reddit
+  - hacker_news
+  - discourse
+
+fetch_defaults:
+  date_window_days: 30
+  per_community_limit: 25
+  comment_limit: 15
+
+ignored_communities:
+  - wallstreetbets
+  - enterpriseit
+
+reddit:
+  enabled: true
+  listing_mode: hot
+  subreddits:
+    - sideproject
+    - entrepreneur
+    - smallbusiness
+    - freelancing
+    - productivity
+    - parenting
+    - homeowners
+    - pets
+    - mealprep
+    - weddingplanning
+    - digitalnomad
+    - creators
+  per_subreddit_limit: 20
+  top_level_comment_limit: 10
+
+hacker_news:
+  enabled: true
+  feeds:
+    - ask
+    - show
+    - best
+  per_feed_limit: 30
+  comment_limit: 20
+
+discourse:
+  enabled: true
+  forums:
+    - name: meta_discourse
+      base_url: https://meta.discourse.org
+      mode: json
+      latest_limit: 20
+      comment_limit: 10
+    - name: discuss_python
+      base_url: https://discuss.python.org
+      mode: json
+      latest_limit: 15
+      comment_limit: 6
+

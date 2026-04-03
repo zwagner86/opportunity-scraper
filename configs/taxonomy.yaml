@@ -1,0 +1,204 @@
+audiences:
+  parents:
+    - parent
+    - toddler
+    - kids
+    - childcare
+    - school pickup
+  pet_owners:
+    - dog
+    - cat
+    - pet
+    - litter
+    - vet
+  homeowners:
+    - homeowner
+    - mortgage
+    - lawn
+    - renovation
+    - home maintenance
+  renters:
+    - rent
+    - landlord
+    - apartment
+    - lease
+  travelers:
+    - travel
+    - trip
+    - flights
+    - vacation
+  creators:
+    - creator
+    - youtube
+    - newsletter
+    - tiktok
+    - content calendar
+  gamers:
+    - gaming
+    - game night
+    - steam
+    - console
+  students:
+    - student
+    - homework
+    - class
+    - campus
+  freelancers:
+    - freelance
+    - client
+    - invoicing
+    - proposal
+  side_hustles:
+    - side hustle
+    - gig
+    - extra income
+    - reselling
+  wedding_planning:
+    - wedding
+    - guest list
+    - venue
+    - registry
+  fitness:
+    - workout
+    - meal prep
+    - gym
+    - training plan
+  meal_planning:
+    - meal plan
+    - grocery
+    - recipes
+    - leftovers
+  personal_finance:
+    - budget
+    - expense
+    - credit card
+    - savings
+  diy_hobbies:
+    - diy
+    - craft
+    - maker
+    - woodworking
+  mental_wellness:
+    - stress
+    - anxiety
+    - burnout
+    - therapy
+  local_community:
+    - neighborhood
+    - local
+    - community board
+    - meetup
+  car_owners:
+    - car
+    - parking
+    - maintenance
+    - gas
+
+problem_types:
+  planning:
+    - plan
+    - itinerary
+    - organize
+  organization:
+    - organize
+    - clutter
+    - keep track
+  scheduling:
+    - schedule
+    - calendar
+    - reschedule
+  discovery:
+    - discover
+    - find
+    - search
+  comparison:
+    - compare
+    - best option
+    - decide between
+  tracking:
+    - track
+    - monitor
+    - reminder
+  coordination:
+    - coordinate
+    - share with
+    - assign
+  communication:
+    - communicate
+    - update everyone
+    - follow up
+  documentation:
+    - notes
+    - document
+    - reference
+  marketplace_matching:
+    - marketplace
+    - hire
+    - find a pro
+  automation:
+    - automate
+    - workflow
+    - repetitive
+  content_creation:
+    - content
+    - write
+    - edit video
+  sharing_reporting:
+    - report
+    - share summary
+    - export
+  budgeting:
+    - budget
+    - cost
+    - spending
+  habit_support:
+    - habit
+    - routine
+    - accountability
+
+solution_types:
+  mobile_app:
+    - reminder
+    - on the go
+    - mobile
+  simple_web_app:
+    - dashboard
+    - web app
+    - portal
+  micro_saas:
+    - subscription
+    - simple software
+    - saas
+  directory:
+    - directory
+    - list of
+    - compare providers
+  marketplace:
+    - hire
+    - connect buyers
+    - local provider
+  browser_extension:
+    - browser
+    - extension
+    - chrome
+  ai_assistant:
+    - summarize
+    - assistant
+    - ai
+  workflow_automation:
+    - automate
+    - integration
+    - zap
+  service_business:
+    - done for you
+    - concierge
+    - local service
+  content_community_product:
+    - community
+    - course
+    - newsletter
+  template_product:
+    - template
+    - checklist
+    - spreadsheet
+

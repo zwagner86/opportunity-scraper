@@ -1,0 +1,52 @@
+pain_signals:
+  frustration:
+    - annoying
+    - frustrating
+    - hate doing
+    - painful
+    - fed up
+    - exhausted by
+  manual_work:
+    - manually
+    - every time
+    - repetitive
+    - spreadsheet
+    - copy and paste
+    - workaround
+    - hacky
+  search_for_tool:
+    - is there an app for
+    - is there a tool for
+    - wish there was
+    - better way
+    - how do you handle
+    - looking for an app
+    - anyone know a tool
+  self_serve:
+    - family
+    - parent
+    - creator
+    - freelance
+    - home
+    - hobby
+    - pet
+    - wedding
+    - fitness
+    - budget
+  b2b_penalty:
+    - procurement
+    - compliance
+    - enterprise
+    - stakeholder
+    - security review
+    - sales team
+    - procurement process
+    - implementation committee
+
+spam_signals:
+  - discount code
+  - crypto giveaway
+  - dm me
+  - seo agency
+  - buy followers
+

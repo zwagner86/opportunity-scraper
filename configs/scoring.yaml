@@ -1,0 +1,17 @@
+weights:
+  pain_intensity_score: 1.25
+  repetition_score: 1.15
+  workaround_score: 1.15
+  self_serve_score: 1.3
+  build_simplicity_score: 1.1
+  sales_friction_penalty: 1.4
+  competition_signal_score: 0.7
+
+thresholds:
+  consumer_language_bonus: 1.0
+  manual_work_bonus: 1.2
+  repeated_theme_bonus: 1.3
+  explicit_b2b_penalty: 1.75
+  enterprise_penalty: 2.0
+  strong_opportunity_floor: 6.0
+
