@@ -6,7 +6,9 @@ from typing import Any
 
 from app.adapters.discourse import DiscourseAdapter
 from app.adapters.hacker_news import HackerNewsAdapter
-from app.adapters.reddit import RedditAdapter
+from app.adapters.html_generic import HtmlGenericAdapter
+from app.adapters.rss_generic import GenericRssAdapter
+from app.adapters.stack_exchange import StackExchangeAdapter
 from app.analysis.opportunity import OpportunityAnalyzer
 from app.config.loader import load_app_config
 from app.repositories.items import ItemRepository
@@ -24,15 +26,17 @@ class IngestionService:
         self.items = ItemRepository(conn)
         self.runs = RunRepository(conn)
         self.adapters = {
-            "reddit": RedditAdapter(),
             "hacker_news": HackerNewsAdapter(),
             "discourse": DiscourseAdapter(),
+            "stack_exchange": StackExchangeAdapter(),
+            "rss_generic": GenericRssAdapter(),
+            "html_generic": HtmlGenericAdapter(),
         }
         self.analyzer = OpportunityAnalyzer()
 
     def run(self, sources: list[str] | None = None, limit_override: int | None = None) -> dict[str, Any]:
         enabled = sources or self.config.sources.enabled_sources
-        run_id = self.runs.create(enabled, self.config.model_dump(mode="json"))
+        run_id = self.runs.create(enabled, self.config.model_dump(mode="json"), self._run_ingestion_method(enabled))
         existing_items = self.items.get_items_for_analysis(limit=2000)
         total_fetched = 0
         new_item_count = 0
@@ -101,3 +105,23 @@ class IngestionService:
             "cluster_summary": cluster_summary,
             "summary": summary,
         }
+
+    def _run_ingestion_method(self, enabled_sources: list[str]) -> str:
+        if len(enabled_sources) != 1:
+            return "mixed"
+        source = enabled_sources[0]
+        if source == "hacker_news":
+            return "api_hacker_news"
+        if source == "stack_exchange":
+            return "api_stackexchange"
+        if source == "rss_generic":
+            return "rss_generic"
+        if source == "html_generic":
+            return "html_generic"
+        if source == "discourse":
+            forum_modes = {forum.get("mode", "json") for forum in self.config.sources.discourse.get("forums", [])}
+            if forum_modes == {"rss"}:
+                return "rss_discourse"
+            if forum_modes == {"json"}:
+                return "json_discourse"
+        return "mixed"

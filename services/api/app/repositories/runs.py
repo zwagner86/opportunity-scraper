@@ -11,20 +11,22 @@ class RunRepository:
     def __init__(self, conn: sqlite3.Connection):
         self.conn = conn
 
-    def create(self, sources: list[str], config_snapshot: dict[str, Any]) -> int:
+    def create(self, sources: list[str], config_snapshot: dict[str, Any], ingestion_method: str) -> int:
         cursor = self.conn.execute(
             """
             INSERT INTO ingestion_runs (
                 started_at,
                 status,
                 sources_json,
-                config_snapshot_json
-            ) VALUES (?, 'running', ?, ?)
+                config_snapshot_json,
+                ingestion_method
+            ) VALUES (?, 'running', ?, ?, ?)
             """,
             (
                 utc_now().isoformat(),
                 json.dumps(sources),
                 json.dumps(config_snapshot),
+                ingestion_method,
             ),
         )
         return int(cursor.lastrowid)
@@ -81,4 +83,3 @@ class RunRepository:
             item["config_snapshot"] = json.loads(item.pop("config_snapshot_json"))
             results.append(item)
         return results
-

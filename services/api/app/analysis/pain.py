@@ -52,13 +52,24 @@ class PainSignalDetector:
         text = f"{item.title}\n{item.body}".lower()
         evidence: list[EvidenceRecord] = []
         counts = Counter()
+        positive_signals = {
+            "frustration",
+            "manual_work",
+            "search_for_tool",
+            "recurring_admin",
+            "coordination_pain",
+            "self_serve",
+        }
+        negative_signals = {"b2b_penalty", "technical_penalty", "support_penalty"}
+        soft_signals = {"generic_question", "advice_request"}
+
         for signal_name, phrases in self.config.keywords.pain_signals.items():
             for phrase in phrases:
                 if phrase.lower() in text:
                     counts[signal_name] += 1
                     evidence.append(
                         EvidenceRecord(
-                            category="pain_signal",
+                            category=self._category(signal_name, positive_signals, negative_signals, soft_signals),
                             signal=signal_name,
                             phrase=phrase,
                             snippet=self._snippet(text, phrase),
@@ -66,7 +77,17 @@ class PainSignalDetector:
                         )
                     )
 
-        if "i built my own" in text or "my own spreadsheet" in text or "my own system" in text:
+        if any(
+            phrase in text
+            for phrase in (
+                "i built my own",
+                "my own spreadsheet",
+                "my own system",
+                "my own checklist",
+                "i ended up making a sheet",
+                "i made a spreadsheet",
+            )
+        ):
             counts["manual_work"] += 1
             evidence.append(
                 EvidenceRecord(
@@ -91,7 +112,15 @@ class PainSignalDetector:
                 )
             )
 
-        if item.comments_count and item.comments_count >= 10 and counts["frustration"]:
+        strong_pain = (
+            counts["frustration"]
+            + counts["manual_work"]
+            + counts["search_for_tool"]
+            + counts["recurring_admin"]
+            + counts["coordination_pain"]
+        )
+
+        if item.comments_count and item.comments_count >= 8 and strong_pain:
             counts["comment_density"] += 1
             evidence.append(
                 EvidenceRecord(
@@ -107,10 +136,18 @@ class PainSignalDetector:
             "frustration": float(counts["frustration"]),
             "manual_work": float(counts["manual_work"]),
             "search_for_tool": float(counts["search_for_tool"]),
+            "recurring_admin": float(counts["recurring_admin"]),
+            "coordination_pain": float(counts["coordination_pain"]),
             "self_serve": float(counts["self_serve"]),
             "b2b_penalty": float(counts["b2b_penalty"]),
+            "technical_penalty": float(counts["technical_penalty"]),
+            "support_penalty": float(counts["support_penalty"]),
+            "generic_question": float(counts["generic_question"]),
+            "advice_request": float(counts["advice_request"]),
             "repetition": float(counts["repetition"]),
             "comment_density": float(counts["comment_density"]),
+            "strong_pain": float(strong_pain),
+            "soft_context": float(counts["generic_question"] + counts["advice_request"]),
         }
 
     def spam_score(self, item: NormalizedItem) -> float:
@@ -143,11 +180,31 @@ class PainSignalDetector:
 
     def _weight(self, signal_name: str) -> float:
         mapping = {
-            "frustration": 1.8,
-            "manual_work": 1.7,
-            "search_for_tool": 1.7,
+            "frustration": 2.1,
+            "manual_work": 1.9,
+            "search_for_tool": 1.6,
+            "recurring_admin": 1.8,
+            "coordination_pain": 1.8,
             "self_serve": 1.2,
             "b2b_penalty": 2.1,
+            "technical_penalty": 2.0,
+            "support_penalty": 1.6,
+            "generic_question": 0.8,
+            "advice_request": 0.8,
         }
         return mapping.get(signal_name, 1.0)
 
+    def _category(
+        self,
+        signal_name: str,
+        positive_signals: set[str],
+        negative_signals: set[str],
+        soft_signals: set[str],
+    ) -> str:
+        if signal_name in positive_signals:
+            return "pain_signal"
+        if signal_name in negative_signals:
+            return "relevance_penalty"
+        if signal_name in soft_signals:
+            return "context_signal"
+        return "pain_signal"

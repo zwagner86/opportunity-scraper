@@ -6,6 +6,12 @@ pain_signals:
     - painful
     - fed up
     - exhausted by
+    - i hate dealing with
+    - this takes forever
+    - such a hassle
+    - it is a mess
+    - we keep missing
+    - there has to be a better way
   manual_work:
     - manually
     - every time
@@ -14,25 +20,48 @@ pain_signals:
     - copy and paste
     - workaround
     - hacky
+    - i always forget
+    - i have to keep track of
+    - i ended up making a sheet
+    - i made a checklist
+    - shared note
+    - text everyone
   search_for_tool:
     - is there an app for
     - is there a tool for
     - wish there was
-    - better way
-    - how do you handle
     - looking for an app
     - anyone know a tool
+    - hoping there is something for
+  recurring_admin:
+    - keep track of
+    - follow up with everyone
+    - remember all the details
+    - juggle all the details
+    - keep everything straight
+    - managing all the moving pieces
+    - household admin
+    - family logistics
+  coordination_pain:
+    - coordinate with everyone
+    - school pickup
+    - carpool
+    - scheduling everyone
+    - group text
+    - reschedule again
+    - update everyone
   self_serve:
     - family
     - parent
-    - creator
-    - freelance
     - home
-    - hobby
     - pet
-    - wedding
-    - fitness
     - budget
+    - groceries
+    - meal plan
+    - apartment
+    - neighborhood
+    - childcare
+    - trip planning
   b2b_penalty:
     - procurement
     - compliance
@@ -42,6 +71,41 @@ pain_signals:
     - sales team
     - procurement process
     - implementation committee
+  technical_penalty:
+    - how do i install
+    - why is my code
+    - stack trace
+    - framework
+    - package
+    - api
+    - sdk
+    - dependency
+    - python
+    - javascript
+    - version
+    - bug in
+    - repo
+  support_penalty:
+    - not working
+    - error message
+    - bug report
+    - support ticket
+    - login issue
+    - crashed
+    - setup help
+    - troubleshooting
+  generic_question:
+    - what do you use for
+    - any recommendations for
+    - how do you handle
+    - what is the best way
+    - can anyone suggest
+  advice_request:
+    - any tips for
+    - looking for advice
+    - what would you do
+    - curious how others handle
+    - does anyone else do this
 
 spam_signals:
   - discount code
@@ -49,4 +113,3 @@ spam_signals:
   - dm me
   - seo agency
   - buy followers
-

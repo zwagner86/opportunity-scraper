@@ -62,6 +62,7 @@ class Normalizer:
         self,
         *,
         source: str,
+        ingestion_method: str,
         community: str,
         source_item_id: str,
         url: str,
@@ -81,6 +82,7 @@ class Normalizer:
         dedupe_hash = make_dedupe_hash(community, title_text, body_text)
         return NormalizedItem(
             source=source,
+            ingestion_method=ingestion_method,
             community=community,
             source_item_id=source_item_id,
             url=url,

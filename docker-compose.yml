@@ -39,7 +39,7 @@ services:
       - "8501:8501"
     depends_on:
       - api
-    command: streamlit run app/main.py --server.address=0.0.0.0 --server.port=8501
+    command: streamlit run app/Home.py --server.address=0.0.0.0 --server.port=8501
 
   n8n:
     image: n8nio/n8n:1.88.0
@@ -62,4 +62,3 @@ services:
 
 volumes:
   n8n_data:
-

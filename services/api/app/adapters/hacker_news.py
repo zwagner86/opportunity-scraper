@@ -42,6 +42,7 @@ class HackerNewsAdapter(SourceAdapter):
                     result.items.append(
                         self.normalizer.normalize(
                             source=self.source_name,
+                            ingestion_method="api_hacker_news",
                             community=feed,
                             source_item_id=str(story["id"]),
                             url=url,
@@ -67,6 +68,7 @@ class HackerNewsAdapter(SourceAdapter):
                         result.items.append(
                             self.normalizer.normalize(
                                 source=self.source_name,
+                                ingestion_method="api_hacker_news",
                                 community=feed,
                                 source_item_id=str(comment["id"]),
                                 url=f"https://news.ycombinator.com/item?id={comment['id']}",
@@ -92,6 +94,7 @@ class HackerNewsAdapter(SourceAdapter):
                 result.errors.append(
                     IngestionError(
                         source=self.source_name,
+                        ingestion_method="api_hacker_news",
                         community=feed,
                         message=str(exc),
                     )
@@ -102,4 +105,3 @@ class HackerNewsAdapter(SourceAdapter):
         response = self.session.get(url, timeout=20)
         response.raise_for_status()
         return response.json()
-

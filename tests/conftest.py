@@ -19,9 +19,6 @@ if str(API_ROOT) not in sys.path:
 def configured_env(tmp_path, monkeypatch):
     monkeypatch.setenv("OPPORTUNITY_DB_PATH", str(tmp_path / "test.db"))
     monkeypatch.setenv("OPPORTUNITY_CONFIG_DIR", str(REPO_ROOT / "configs"))
-    monkeypatch.setenv("REDDIT_CLIENT_ID", "test-client-id")
-    monkeypatch.setenv("REDDIT_CLIENT_SECRET", "test-client-secret")
-    monkeypatch.setenv("REDDIT_USER_AGENT", "test-agent")
 
     from app.config.loader import load_app_config
     from app.config.settings import get_settings
@@ -59,6 +56,7 @@ def seed_item(db_conn):
     def factory(
         *,
         source: str = "reddit",
+        ingestion_method: str | None = None,
         community: str = "parents",
         source_item_id: str,
         title: str,
@@ -66,9 +64,17 @@ def seed_item(db_conn):
         content_type: str = "thread",
         url: str | None = None,
     ) -> int:
-        run_id = run_repo.create([source], {"test": True})
+        resolved_ingestion_method = ingestion_method or {
+            "reddit": "manual_reddit_url",
+            "hacker_news": "api_hacker_news",
+            "discourse": "json_discourse",
+            "stack_exchange": "api_stackexchange",
+            "rss_generic": "rss_generic",
+        }.get(source, "mixed")
+        run_id = run_repo.create([source], {"test": True}, resolved_ingestion_method)
         item = normalizer.normalize(
             source=source,
+            ingestion_method=resolved_ingestion_method,
             community=community,
             source_item_id=source_item_id,
             url=url or f"https://example.com/{source_item_id}",

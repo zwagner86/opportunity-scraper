@@ -5,44 +5,64 @@ audiences:
     - kids
     - childcare
     - school pickup
-  pet_owners:
-    - dog
-    - cat
-    - pet
-    - litter
-    - vet
+    - family calendar
+    - carpool
   homeowners:
     - homeowner
     - mortgage
     - lawn
     - renovation
     - home maintenance
+    - contractor
+    - utility bill
   renters:
     - rent
     - landlord
     - apartment
     - lease
+    - moving
+    - roommate
+  pet_owners:
+    - dog
+    - cat
+    - pet
+    - litter
+    - vet
+    - pet sitter
+  meal_planning:
+    - meal plan
+    - grocery
+    - recipes
+    - leftovers
+    - pantry
+    - shopping list
+  personal_finance:
+    - budget
+    - expense
+    - credit card
+    - savings
+    - bill pay
+    - subscriptions
+  local_community:
+    - neighborhood
+    - local
+    - community board
+    - meetup
+    - school district
+    - local event
   travelers:
     - travel
     - trip
     - flights
     - vacation
+    - itinerary
+    - packing
   creators:
     - creator
     - youtube
     - newsletter
     - tiktok
     - content calendar
-  gamers:
-    - gaming
-    - game night
-    - steam
-    - console
-  students:
-    - student
-    - homework
-    - class
-    - campus
   freelancers:
     - freelance
     - client
@@ -63,16 +83,6 @@ audiences:
     - meal prep
     - gym
     - training plan
-  meal_planning:
-    - meal plan
-    - grocery
-    - recipes
-    - leftovers
-  personal_finance:
-    - budget
-    - expense
-    - credit card
-    - savings
   diy_hobbies:
     - diy
     - craft
@@ -83,30 +93,40 @@ audiences:
     - anxiety
     - burnout
     - therapy
-  local_community:
-    - neighborhood
-    - local
-    - community board
-    - meetup
   car_owners:
     - car
     - parking
     - maintenance
     - gas
+    - registration
+  gamers:
+    - gaming
+    - game night
+    - steam
+    - console
+  students:
+    - student
+    - homework
+    - class
+    - campus
 
 problem_types:
   planning:
     - plan
     - itinerary
     - organize
+    - plan around
   organization:
     - organize
     - clutter
     - keep track
+    - keep everything straight
   scheduling:
     - schedule
     - calendar
     - reschedule
+    - pickup
+    - appointment
   discovery:
     - discover
     - find
@@ -119,22 +139,27 @@ problem_types:
     - track
     - monitor
     - reminder
+    - remember
   coordination:
     - coordinate
     - share with
     - assign
+    - group text
+    - update everyone
   communication:
     - communicate
-    - update everyone
     - follow up
+    - keep everyone updated
   documentation:
     - notes
     - document
     - reference
+    - checklist
   marketplace_matching:
     - marketplace
     - hire
     - find a pro
+    - local provider
   automation:
     - automate
     - workflow
@@ -201,4 +226,3 @@ solution_types:
     - template
     - checklist
     - spreadsheet
-

@@ -1,67 +1,11 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
-
-
-def test_reddit_adapter_normalizes_submission_and_comment(configured_env, monkeypatch):
-    from app.adapters import reddit as reddit_module
-    from app.adapters.reddit import RedditAdapter
-
-    class FakeComment:
-        def __init__(self):
-            self.id = "c1"
-            self.body = "I manually juggle this every week."
-            self.author = "commenter"
-            self.created_utc = 1_700_000_000
-            self.score = 8
-            self.parent_id = "t3_s1"
-            self.depth = 0
-            self.permalink = "/r/test/comments/s1/title/c1/"
-
-    class FakeComments(list):
-        def replace_more(self, limit=0):
-            return None
-
-    class FakeSubmission:
-        def __init__(self):
-            self.id = "s1"
-            self.title = "Wish there was a better way to manage meal plans"
-            self.selftext = "I built my own spreadsheet for this."
-            self.author = "author"
-            self.created_utc = 1_700_000_000
-            self.score = 42
-            self.num_comments = 12
-            self.permalink = "/r/test/comments/s1/title/"
-            self.link_flair_text = "Question"
-            self.upvote_ratio = 0.95
-            self.is_self = True
-            self.comments = FakeComments([FakeComment()])
-
-    class FakeSubreddit:
-        def hot(self, limit=20):
-            return [FakeSubmission()]
-
-    class FakeReddit:
-        def subreddit(self, name):
-            return FakeSubreddit()
-
-    monkeypatch.setattr(reddit_module.praw, "Reddit", lambda **_: FakeReddit())
-    adapter = RedditAdapter()
-    adapter.config["subreddits"] = ["test"]
-    result = adapter.fetch(run_id=1, limit_override=1)
-
-    assert len(result.items) == 2
-    thread, comment = result.items
-    assert thread.community == "test"
-    assert thread.raw_metadata["link_flair_text"] == "Question"
-    assert comment.content_type == "comment"
-    assert comment.parent_source_item_id == "s1"
-
 
 def test_hacker_news_adapter_normalizes_story_and_comment(configured_env, monkeypatch):
     from app.adapters.hacker_news import HackerNewsAdapter
 
     adapter = HackerNewsAdapter()
+    adapter.config["enabled"] = True
     adapter.config["feeds"] = ["ask"]
 
     def fake_get_json(url: str):
@@ -92,6 +36,7 @@ def test_hacker_news_adapter_normalizes_story_and_comment(configured_env, monkey
 
     assert len(result.items) == 2
     story, comment = result.items
+    assert story.ingestion_method == "api_hacker_news"
     assert story.content_type == "story"
     assert story.raw_metadata["feed"] == "ask"
     assert comment.parent_source_item_id == "101"
@@ -101,6 +46,7 @@ def test_discourse_adapter_normalizes_topic_and_post(configured_env, monkeypatch
     from app.adapters.discourse import DiscourseAdapter
 
     adapter = DiscourseAdapter()
+    adapter.config["enabled"] = True
     adapter.config["forums"] = [{"name": "forum", "base_url": "https://forum.example.com", "mode": "json", "latest_limit": 1, "comment_limit": 1}]
 
     class FakeResponse:
@@ -148,7 +94,135 @@ def test_discourse_adapter_normalizes_topic_and_post(configured_env, monkeypatch
 
     assert len(result.items) == 2
     topic, post = result.items
+    assert topic.ingestion_method == "json_discourse"
     assert topic.source_item_id == "forum:topic:9"
     assert post.parent_source_item_id == "forum:topic:9"
     assert topic.raw_metadata["forum"] == "forum"
 
+
+def test_stack_exchange_adapter_normalizes_question_and_answer(configured_env, monkeypatch):
+    from app.adapters.stack_exchange import StackExchangeAdapter
+
+    adapter = StackExchangeAdapter()
+    adapter.config["enabled"] = True
+    adapter.config["queries"] = [{"site": "webapps", "community": "webapps_productivity", "tags": "productivity"}]
+
+    def fake_get_json(path: str, params: dict[str, object]):
+        if path == "/questions":
+            return {
+                "items": [
+                    {
+                        "question_id": 11,
+                        "title": "How do I track chores without a spreadsheet?",
+                        "body": "<p>Need a better workflow.</p>",
+                        "link": "https://webapps.stackexchange.com/questions/11",
+                        "creation_date": 1_700_000_000,
+                        "score": 18,
+                        "answer_count": 1,
+                        "tags": ["productivity"],
+                        "is_answered": True,
+                        "view_count": 200,
+                        "owner": {"display_name": "asker"},
+                    }
+                ]
+            }
+        return {
+            "items": [
+                {
+                    "answer_id": 12,
+                    "body": "<p>I use a checklist app.</p>",
+                    "link": "https://webapps.stackexchange.com/a/12",
+                    "creation_date": 1_700_000_100,
+                    "score": 7,
+                    "comment_count": 0,
+                    "is_accepted": True,
+                    "owner": {"display_name": "answerer"},
+                }
+            ]
+        }
+
+    monkeypatch.setattr(adapter, "_get_json", fake_get_json)
+    result = adapter.fetch(run_id=7, limit_override=1)
+
+    assert len(result.items) == 2
+    question, answer = result.items
+    assert question.ingestion_method == "api_stackexchange"
+    assert question.source_item_id == "webapps:q:11"
+    assert answer.parent_source_item_id == "webapps:q:11"
+
+
+def test_generic_rss_adapter_normalizes_entry(configured_env, monkeypatch):
+    from types import SimpleNamespace
+
+    from app.adapters.rss_generic import GenericRssAdapter
+    import app.adapters.rss_generic as rss_module
+
+    adapter = GenericRssAdapter()
+    adapter.config["enabled"] = True
+    adapter.config["feeds"] = [{"name": "obsidian_forum", "feed_url": "https://forum.obsidian.md/latest.rss", "limit": 1}]
+
+    monkeypatch.setattr(
+        rss_module.feedparser,
+        "parse",
+        lambda _: SimpleNamespace(entries=[{"id": "abc", "link": "https://forum.obsidian.md/t/abc", "title": "Need a better note workflow", "summary": "<p>I still use a spreadsheet.</p>", "author": "user", "published": "2026-01-01T00:00:00Z"}]),
+    )
+    result = adapter.fetch(run_id=9, limit_override=1)
+
+    assert len(result.items) == 1
+    entry = result.items[0]
+    assert entry.source == "rss_generic"
+    assert entry.ingestion_method == "rss_generic"
+    assert entry.community == "obsidian_forum"
+
+
+def test_html_generic_adapter_normalizes_public_html_source(configured_env, monkeypatch):
+    from app.adapters.html_generic import HtmlGenericAdapter
+
+    adapter = HtmlGenericAdapter()
+    adapter.config["enabled"] = True
+    adapter.config["sources"] = [
+        {
+            "name": "public_forum",
+            "community": "parents",
+            "list_url": "https://forum.example.com/latest",
+            "item_selector": ["li.thread"],
+            "title_selector": ["a.title"],
+            "link_selector": ["a.title"],
+            "summary_selector": ["p.summary"],
+            "author_selector": ["span.author"],
+            "content_type": "thread",
+            "limit": 2,
+        }
+    ]
+
+    class FakeResponse:
+        def __init__(self, text: str):
+            self.text = text
+
+        def raise_for_status(self):
+            return None
+
+    html = """
+    <html>
+      <body>
+        <ul class="threads">
+          <li class="thread">
+            <a class="title" href="/threads/1">Need a better school pickup routine</a>
+            <p class="summary">I keep a spreadsheet and text everyone every afternoon.</p>
+            <span class="author">alex</span>
+          </li>
+        </ul>
+      </body>
+    </html>
+    """
+
+    monkeypatch.setattr(adapter.session, "get", lambda url, headers=None, timeout=20: FakeResponse(html))
+    result = adapter.fetch(run_id=11, limit_override=1)
+
+    assert len(result.items) == 1
+    item = result.items[0]
+    assert item.source == "html_generic"
+    assert item.ingestion_method == "html_generic"
+    assert item.community == "parents"
+    assert item.url == "https://forum.example.com/threads/1"
+    assert item.title == "Need a better school pickup routine"

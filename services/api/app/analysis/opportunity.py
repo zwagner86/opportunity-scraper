@@ -33,8 +33,21 @@ class OpportunityAnalyzer:
             solution_types=solution_types,
             existing_tool_mentions=existing_tool_mentions,
         )
+        is_candidate, candidate_reason, content_role = self.scorer.classify_candidate(
+            item=item,
+            signals=signals,
+            scores=scores,
+        )
+        if not is_candidate:
+            scores.overall_opportunity_score = round(min(scores.overall_opportunity_score, 4.4), 2)
+            scores.rationale.append(candidate_reason)
         spam_score = self.detector.spam_score(item)
-        is_self_serve_friendly = scores.self_serve_score >= 6.0 and scores.sales_friction_penalty <= 3.5
+        is_self_serve_friendly = (
+            is_candidate
+            and scores.self_serve_score >= 5.8
+            and scores.sales_friction_penalty <= 3.5
+            and content_role == "primary_candidate"
+        )
         return AnalysisResult(
             evidence=evidence,
             scores=scores,
@@ -42,5 +55,7 @@ class OpportunityAnalyzer:
             solution_types=solution_types,
             spam_score=spam_score,
             is_self_serve_friendly=is_self_serve_friendly,
+            is_candidate=is_candidate,
+            candidate_reason=candidate_reason,
+            content_role=content_role,
         )
-

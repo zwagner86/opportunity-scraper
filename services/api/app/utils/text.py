@@ -22,6 +22,9 @@ def make_dedupe_hash(*parts: str) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+def make_short_hash(*parts: str, length: int = 12) -> str:
+    return make_dedupe_hash(*parts)[:length]
+
+
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)
-

@@ -4,14 +4,14 @@ import pandas as pd
 import streamlit as st
 
 from app.api_client import APIClient
-from app.ui import render_badges, setup_page
+from app.ui import format_source_name, render_badges, setup_page
 
 
 setup_page("Clusters")
 client = APIClient()
 
 st.title("Clusters")
-st.caption("Browse grouped opportunity themes built from shared language and tag similarity.")
+st.caption("Browse grouped candidate themes built from shared language across primary opportunity threads.")
 
 clusters = client.get("/clusters", limit=100)
 if not clusters:
@@ -30,6 +30,7 @@ cluster_df = pd.DataFrame(
         for cluster in clusters
     ]
 )
+st.subheader("Topic groups")
 st.dataframe(cluster_df, use_container_width=True, hide_index=True)
 
 cluster_id = st.selectbox(
@@ -62,7 +63,7 @@ for item in cluster.get("items", []):
                 <div style="display:flex;justify-content:space-between;gap:1rem;">
                     <div>
                         <div style="font-weight:700;font-size:1.05rem;">{item['title'] or '(untitled)'}</div>
-                        <div class="muted">{item['source']} / {item['community']}</div>
+                        <div class="muted">{format_source_name(item['source'])} / {item['community']}</div>
                     </div>
                     <div style="text-align:right;">
                         <div><strong>{item.get('overall_opportunity_score', 0):.2f}</strong></div>

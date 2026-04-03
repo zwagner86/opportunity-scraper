@@ -38,6 +38,7 @@ class DiscourseAdapter(SourceAdapter):
                 result.errors.append(
                     IngestionError(
                         source=self.source_name,
+                        ingestion_method="json_discourse" if forum.get("mode", "json") == "json" else "rss_discourse",
                         community=forum["name"],
                         message=str(exc),
                     )
@@ -70,6 +71,7 @@ class DiscourseAdapter(SourceAdapter):
             result.items.append(
                 self.normalizer.normalize(
                     source=self.source_name,
+                    ingestion_method="json_discourse",
                     community=forum["name"],
                     source_item_id=f"{forum['name']}:topic:{topic_id}",
                     url=urljoin(forum["base_url"], f"/t/{slug}/{topic_id}"),
@@ -94,6 +96,7 @@ class DiscourseAdapter(SourceAdapter):
                 result.items.append(
                     self.normalizer.normalize(
                         source=self.source_name,
+                        ingestion_method="json_discourse",
                         community=forum["name"],
                         source_item_id=f"{forum['name']}:post:{post['id']}",
                         url=urljoin(forum["base_url"], f"/t/{slug}/{topic_id}/{post.get('post_number', 1)}"),
@@ -129,6 +132,7 @@ class DiscourseAdapter(SourceAdapter):
             result.items.append(
                 self.normalizer.normalize(
                     source=self.source_name,
+                    ingestion_method="rss_discourse",
                     community=forum["name"],
                     source_item_id=f"{forum['name']}:rss:{entry.get('id', entry.get('link'))}",
                     url=entry.get("link"),
@@ -144,4 +148,3 @@ class DiscourseAdapter(SourceAdapter):
                     ingestion_run_id=run_id,
                 )
             )
-

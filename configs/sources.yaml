@@ -1,56 +1,257 @@
 enabled_sources:
-  - reddit
-  - hacker_news
-  - discourse
+  - html_generic
+  - stack_exchange
 
 fetch_defaults:
-  date_window_days: 30
-  per_community_limit: 25
-  comment_limit: 15
+  date_window_days: 21
+  per_community_limit: 20
+  comment_limit: 8
 
 ignored_communities:
-  - wallstreetbets
+  - discuss_python
+  - meta_discourse
+  - webapps_productivity
   - enterpriseit
 
 reddit:
-  enabled: true
-  listing_mode: hot
-  subreddits:
-    - sideproject
-    - entrepreneur
-    - smallbusiness
-    - freelancing
-    - productivity
-    - parenting
-    - homeowners
-    - pets
-    - mealprep
-    - weddingplanning
-    - digitalnomad
-    - creators
-  per_subreddit_limit: 20
-  top_level_comment_limit: 10
+  enabled: false
+  manual_import_defaults:
+    suggested_communities:
+      - parenting
+      - mealplanning
+      - frugal
+      - homeowners
+      - pets
+      - travelhacks
+    max_comments_per_thread: 6
 
 hacker_news:
-  enabled: true
+  enabled: false
   feeds:
     - ask
-    - show
-    - best
-  per_feed_limit: 30
-  comment_limit: 20
+  per_feed_limit: 15
+  comment_limit: 10
 
 discourse:
-  enabled: true
-  forums:
-    - name: meta_discourse
-      base_url: https://meta.discourse.org
-      mode: json
-      latest_limit: 20
-      comment_limit: 10
-    - name: discuss_python
-      base_url: https://discuss.python.org
-      mode: json
-      latest_limit: 15
-      comment_limit: 6
+  enabled: false
+  forums: []
 
+stack_exchange:
+  enabled: true
+  page_size: 10
+  answer_limit: 3
+  date_window_days: 21
+  queries:
+    - site: parenting
+      community: parenting_family_logistics
+      sort: votes
+      order: desc
+    - site: money
+      community: household_budgeting
+      sort: votes
+      order: desc
+    - site: diy
+      community: home_organization
+      sort: votes
+      order: desc
+    - site: travel
+      community: travel_coordination
+      sort: votes
+      order: desc
+    - site: pets
+      community: pet_care
+      sort: votes
+      order: desc
+
+rss_feeds:
+  enabled: false
+  feeds:
+    - name: ask_metafilter
+      source_label: general_life_qna
+      feed_url: https://ask.metafilter.com/rss
+      limit: 20
+    - name: mrmoneymustache_forum
+      source_label: personal_finance_community
+      feed_url: https://forum.mrmoneymustache.com/index.php?type=rss;action=.xml
+      limit: 20
+
+html_generic:
+  enabled: true
+  request_headers:
+    User-Agent: OpportunityFinderLocal/1.0
+  sources:
+    - name: mse_budgeting_bank_accounts
+      community: personal_finance
+      source_label: mse_forum
+      list_url: https://forums.moneysavingexpert.com/categories/budgeting-bank-accounts
+      item_selector:
+        - ul.DataList li.Item
+        - li.Item
+      title_selector:
+        - a.Title
+        - h3.Title a
+        - div.Title a
+      link_selector:
+        - a.Title
+        - h3.Title a
+        - div.Title a
+      summary_selector:
+        - div.Message
+        - div.Excerpt
+        - div.Item-BodyWrap
+      author_selector:
+        - a.Username
+        - span.Author a
+        - span.MItem.Author a
+      limit: 18
+      content_type: thread
+    - name: mse_consumer_rights
+      community: shoppers
+      source_label: mse_forum
+      list_url: https://forums.moneysavingexpert.com/categories/consumer-rights
+      item_selector:
+        - ul.DataList li.Item
+        - li.Item
+      title_selector:
+        - a.Title
+        - h3.Title a
+        - div.Title a
+      link_selector:
+        - a.Title
+        - h3.Title a
+        - div.Title a
+      summary_selector:
+        - div.Message
+        - div.Excerpt
+        - div.Item-BodyWrap
+      author_selector:
+        - a.Username
+        - span.Author a
+        - span.MItem.Author a
+      limit: 18
+      content_type: thread
+    - name: mse_praise_vent_warnings
+      community: shoppers
+      source_label: mse_forum
+      list_url: https://forums.moneysavingexpert.com/categories/praise-vent-warnings
+      item_selector:
+        - ul.DataList li.Item
+        - li.Item
+      title_selector:
+        - a.Title
+        - h3.Title a
+        - div.Title a
+      link_selector:
+        - a.Title
+        - h3.Title a
+        - div.Title a
+      summary_selector:
+        - div.Message
+        - div.Excerpt
+        - div.Item-BodyWrap
+      author_selector:
+        - a.Username
+        - span.Author a
+        - span.MItem.Author a
+      limit: 18
+      content_type: thread
+    - name: mse_debt_free_wannabe
+      community: personal_finance
+      source_label: mse_forum
+      list_url: https://forums.moneysavingexpert.com/categories/debt-free-wannabe
+      item_selector:
+        - ul.DataList li.Item
+        - li.Item
+      title_selector:
+        - a.Title
+        - h3.Title a
+        - div.Title a
+      link_selector:
+        - a.Title
+        - h3.Title a
+        - div.Title a
+      summary_selector:
+        - div.Message
+        - div.Excerpt
+        - div.Item-BodyWrap
+      author_selector:
+        - a.Username
+        - span.Author a
+        - span.MItem.Author a
+      limit: 16
+      content_type: thread
+    - name: mse_marriage_relationships_families
+      community: parents
+      source_label: mse_forum
+      list_url: https://forums.moneysavingexpert.com/categories/marriage-relationships-families
+      item_selector:
+        - ul.DataList li.Item
+        - li.Item
+      title_selector:
+        - a.Title
+        - h3.Title a
+        - div.Title a
+      link_selector:
+        - a.Title
+        - h3.Title a
+        - div.Title a
+      summary_selector:
+        - div.Message
+        - div.Excerpt
+        - div.Item-BodyWrap
+      author_selector:
+        - a.Username
+        - span.Author a
+        - span.MItem.Author a
+      limit: 16
+      content_type: thread
+    - name: mse_overseas_holidays_travel_planning
+      community: travelers
+      source_label: mse_forum
+      list_url: https://forums.moneysavingexpert.com/categories/overseas-holidays-travel-planning
+      item_selector:
+        - ul.DataList li.Item
+        - li.Item
+      title_selector:
+        - a.Title
+        - h3.Title a
+        - div.Title a
+      link_selector:
+        - a.Title
+        - h3.Title a
+        - div.Title a
+      summary_selector:
+        - div.Message
+        - div.Excerpt
+        - div.Item-BodyWrap
+      author_selector:
+        - a.Username
+        - span.Author a
+        - span.MItem.Author a
+      limit: 16
+      content_type: thread
+    - name: mse_home_diy
+      community: homeowners
+      source_label: mse_forum
+      list_url: https://forums.moneysavingexpert.com/categories/in-my-home-includes-diy-moneysaving
+      item_selector:
+        - ul.DataList li.Item
+        - li.Item
+      title_selector:
+        - a.Title
+        - h3.Title a
+        - div.Title a
+      link_selector:
+        - a.Title
+        - h3.Title a
+        - div.Title a
+      summary_selector:
+        - div.Message
+        - div.Excerpt
+        - div.Item-BodyWrap
+      author_selector:
+        - a.Username
+        - span.Author a
+        - span.MItem.Author a
+      limit: 16
+      content_type: thread

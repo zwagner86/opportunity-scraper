@@ -17,6 +17,9 @@ class SourcesConfig(BaseModel):
     reddit: dict[str, Any] = Field(default_factory=dict)
     hacker_news: dict[str, Any] = Field(default_factory=dict)
     discourse: dict[str, Any] = Field(default_factory=dict)
+    stack_exchange: dict[str, Any] = Field(default_factory=dict)
+    rss_feeds: dict[str, Any] = Field(default_factory=dict)
+    html_generic: dict[str, Any] = Field(default_factory=dict)
 
 
 class ScoringConfig(BaseModel):
@@ -60,4 +63,3 @@ def load_app_config() -> AppConfig:
         keywords=KeywordsConfig.model_validate(_load_yaml(config_dir / "keywords.yaml")),
         taxonomy=TaxonomyConfig.model_validate(_load_yaml(config_dir / "taxonomy.yaml")),
     )
-

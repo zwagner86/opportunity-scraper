@@ -31,7 +31,8 @@ class ItemRepository:
             self.conn.execute(
                 """
                 UPDATE items
-                SET community = ?,
+                SET ingestion_method = ?,
+                    community = ?,
                     url = ?,
                     title = ?,
                     body = ?,
@@ -48,10 +49,14 @@ class ItemRepository:
                     language_signals_json = ?,
                     solution_types_json = ?,
                     is_self_serve_friendly = ?,
-                    spam_score = ?
+                    spam_score = ?,
+                    is_candidate = ?,
+                    candidate_reason = ?,
+                    content_role = ?
                 WHERE id = ?
                 """,
                 (
+                    item.ingestion_method,
                     item.community,
                     item.url,
                     item.title,
@@ -70,6 +75,9 @@ class ItemRepository:
                     json.dumps(analysis.solution_types),
                     int(analysis.is_self_serve_friendly),
                     analysis.spam_score,
+                    int(analysis.is_candidate),
+                    analysis.candidate_reason,
+                    analysis.content_role,
                     item_id,
                 ),
             )
@@ -80,6 +88,7 @@ class ItemRepository:
             """
             INSERT INTO items (
                 source,
+                ingestion_method,
                 community,
                 source_item_id,
                 url,
@@ -98,11 +107,15 @@ class ItemRepository:
                 language_signals_json,
                 solution_types_json,
                 is_self_serve_friendly,
-                spam_score
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                spam_score,
+                is_candidate,
+                candidate_reason,
+                content_role
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 item.source,
+                item.ingestion_method,
                 item.community,
                 item.source_item_id,
                 item.url,
@@ -122,6 +135,9 @@ class ItemRepository:
                 json.dumps(analysis.solution_types),
                 int(analysis.is_self_serve_friendly),
                 analysis.spam_score,
+                int(analysis.is_candidate),
+                analysis.candidate_reason,
+                analysis.content_role,
             ),
         )
         item_id = int(cursor.lastrowid)
@@ -260,6 +276,35 @@ class ItemRepository:
                 (item_id,),
             ).fetchall()
         ]
+        item["supporting_items"] = [
+            self._deserialize_item(supporting_row)
+            for supporting_row in self.conn.execute(
+                """
+                SELECT items.*,
+                       item_scores.overall_opportunity_score
+                FROM items
+                LEFT JOIN item_scores ON item_scores.item_id = items.id
+                WHERE items.source = ?
+                  AND items.parent_source_item_id = ?
+                ORDER BY item_scores.overall_opportunity_score DESC, items.created_at ASC
+                """,
+                (item["source"], item["source_item_id"]),
+            ).fetchall()
+        ]
+        if item.get("parent_source_item_id"):
+            parent_row = self.conn.execute(
+                """
+                SELECT items.*,
+                       item_scores.overall_opportunity_score
+                FROM items
+                LEFT JOIN item_scores ON item_scores.item_id = items.id
+                WHERE items.source = ?
+                  AND items.source_item_id = ?
+                LIMIT 1
+                """,
+                (item["source"], item["parent_source_item_id"]),
+            ).fetchone()
+            item["parent_item"] = self._deserialize_item(parent_row) if parent_row else None
         item["tags"] = [
             dict(tag)
             for tag in self.conn.execute(
@@ -290,6 +335,18 @@ class ItemRepository:
         if source := filters.get("source"):
             where.append("items.source = ?")
             params.append(source)
+        candidate_only = filters.get("candidate_only", True)
+        if candidate_only:
+            if filters.get("include_supporting"):
+                where.append("(items.is_candidate = 1 OR items.content_role = 'supporting_comment')")
+            else:
+                where.append("items.is_candidate = 1")
+        if ingestion_method := filters.get("ingestion_method"):
+            where.append("items.ingestion_method = ?")
+            params.append(ingestion_method)
+        if content_role := filters.get("content_role"):
+            where.append("items.content_role = ?")
+            params.append(content_role)
         if community := filters.get("community"):
             where.append("items.community = ?")
             params.append(community)
@@ -442,6 +499,8 @@ class ItemRepository:
             FROM items
             LEFT JOIN item_scores ON item_scores.item_id = items.id
             WHERE items.dismissed = 0
+              AND items.is_candidate = 1
+              AND items.content_role = 'primary_candidate'
             ORDER BY item_scores.overall_opportunity_score DESC, items.created_at DESC
             LIMIT ?
             """,
@@ -467,14 +526,18 @@ class ItemRepository:
         totals = self.conn.execute(
             """
             SELECT COUNT(*) AS total_items,
+                   SUM(CASE WHEN is_candidate = 1 THEN 1 ELSE 0 END) AS candidate_items,
+                   SUM(CASE WHEN content_role = 'supporting_comment' THEN 1 ELSE 0 END) AS supporting_items,
                    SUM(saved) AS saved_items,
                    SUM(dismissed) AS dismissed_items,
-                   AVG(item_scores.overall_opportunity_score) AS avg_score
+                   AVG(CASE WHEN items.is_candidate = 1 THEN item_scores.overall_opportunity_score END) AS avg_score
             FROM items
             LEFT JOIN item_scores ON item_scores.item_id = items.id
             """
         ).fetchone()
         stats = dict(totals)
+        stats["candidate_items"] = int(stats.get("candidate_items") or 0)
+        stats["supporting_items"] = int(stats.get("supporting_items") or 0)
         stats["saved_items"] = int(stats.get("saved_items") or 0)
         stats["dismissed_items"] = int(stats.get("dismissed_items") or 0)
         for key, tag_type in (
@@ -488,7 +551,9 @@ class ItemRepository:
                     SELECT tags.name, COUNT(*) AS count
                     FROM item_tags
                     JOIN tags ON tags.id = item_tags.tag_id
+                    JOIN items ON items.id = item_tags.item_id
                     WHERE tags.tag_type = ?
+                      AND items.is_candidate = 1
                     GROUP BY tags.name
                     ORDER BY count DESC, tags.name ASC
                     LIMIT 10
@@ -502,8 +567,21 @@ class ItemRepository:
                 """
                 SELECT source AS name, COUNT(*) AS count
                 FROM items
+                WHERE is_candidate = 1
                 GROUP BY source
                 ORDER BY count DESC, source ASC
+                """
+            ).fetchall()
+        ]
+        stats["top_ingestion_methods"] = [
+            dict(row)
+            for row in self.conn.execute(
+                """
+                SELECT ingestion_method AS name, COUNT(*) AS count
+                FROM items
+                WHERE is_candidate = 1
+                GROUP BY ingestion_method
+                ORDER BY count DESC, ingestion_method ASC
                 """
             ).fetchall()
         ]
@@ -513,6 +591,7 @@ class ItemRepository:
                 """
                 SELECT community AS name, COUNT(*) AS count
                 FROM items
+                WHERE is_candidate = 1
                 GROUP BY community
                 ORDER BY count DESC, community ASC
                 LIMIT 10
@@ -526,6 +605,8 @@ class ItemRepository:
                 SELECT CAST(item_scores.overall_opportunity_score AS INTEGER) AS bucket,
                        COUNT(*) AS count
                 FROM item_scores
+                JOIN items ON items.id = item_scores.item_id
+                WHERE items.is_candidate = 1
                 GROUP BY bucket
                 ORDER BY bucket
                 """
@@ -554,6 +635,9 @@ class ItemRepository:
             fieldnames=[
                 "id",
                 "source",
+                "ingestion_method",
+                "is_candidate",
+                "content_role",
                 "community",
                 "title",
                 "body",
@@ -571,6 +655,9 @@ class ItemRepository:
                 {
                     "id": item["id"],
                     "source": item["source"],
+                    "ingestion_method": item.get("ingestion_method"),
+                    "is_candidate": item.get("is_candidate"),
+                    "content_role": item.get("content_role"),
                     "community": item["community"],
                     "title": item["title"],
                     "body": item["body"],
@@ -601,4 +688,5 @@ class ItemRepository:
             item["rationale"] = item.pop("rationale_json")
         item["saved"] = bool(item.get("saved"))
         item["dismissed"] = bool(item.get("dismissed"))
+        item["is_candidate"] = bool(item.get("is_candidate"))
         return item

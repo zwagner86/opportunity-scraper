@@ -6,11 +6,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response
 import sqlite3
 
 from app.api.dependencies import get_db
-from app.models.api import IngestionRequest, ItemUpdateRequest, MarkdownSummaryRequest
+from app.models.api import IngestionRequest, ItemUpdateRequest, ManualRedditImportRequest, MarkdownSummaryRequest
 from app.repositories.items import ItemRepository
 from app.repositories.runs import RunRepository
 from app.services.clustering import ClusterService
 from app.services.ingestion import IngestionService
+from app.services.manual_imports import ManualImportService
 from app.services.summary import SummaryService
 
 
@@ -21,6 +22,10 @@ def _filters(
     keyword: str | None = Query(default=None),
     query: str | None = Query(default=None),
     source: str | None = Query(default=None),
+    ingestion_method: str | None = Query(default=None),
+    candidate_only: bool = Query(default=True),
+    include_supporting: bool = Query(default=False),
+    content_role: str | None = Query(default=None),
     community: str | None = Query(default=None),
     tag: str | None = Query(default=None),
     tag_type: str | None = Query(default=None),
@@ -39,6 +44,10 @@ def _filters(
         "keyword": keyword,
         "query": query,
         "source": source,
+        "ingestion_method": ingestion_method,
+        "candidate_only": candidate_only,
+        "include_supporting": include_supporting,
+        "content_role": content_role,
         "community": community,
         "tag": tag,
         "tag_type": tag_type,
@@ -64,6 +73,19 @@ def healthcheck() -> dict[str, str]:
 def run_ingestion(request: IngestionRequest, db: sqlite3.Connection = Depends(get_db)) -> dict[str, Any]:
     service = IngestionService(db)
     return service.run(sources=request.sources, limit_override=request.limit_override)
+
+
+@router.get("/imports/reddit-template")
+def reddit_import_template(db: sqlite3.Connection = Depends(get_db)) -> dict[str, object]:
+    return ManualImportService(db).template_payload()
+
+
+@router.post("/imports/reddit-manual")
+def import_reddit_manual(
+    request: ManualRedditImportRequest,
+    db: sqlite3.Connection = Depends(get_db),
+) -> dict[str, object]:
+    return ManualImportService(db).import_reddit_threads(request)
 
 
 @router.get("/runs")

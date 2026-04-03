@@ -15,12 +15,12 @@ class APIClient:
         self.session = requests.Session()
 
     def get(self, path: str, **params: Any) -> Any:
-        response = self.session.get(f"{self.base_url}{path}", params={k: v for k, v in params.items() if v not in (None, "", False)}, timeout=30)
+        response = self.session.get(f"{self.base_url}{path}", params=self._clean_params(params), timeout=30)
         response.raise_for_status()
         return response.json()
 
     def get_text(self, path: str, **params: Any) -> str:
-        response = self.session.get(f"{self.base_url}{path}", params={k: v for k, v in params.items() if v not in (None, "", False)}, timeout=30)
+        response = self.session.get(f"{self.base_url}{path}", params=self._clean_params(params), timeout=30)
         response.raise_for_status()
         return response.text
 
@@ -34,3 +34,5 @@ class APIClient:
         response.raise_for_status()
         return response.json()
 
+    def _clean_params(self, params: dict[str, Any]) -> dict[str, Any]:
+        return {key: value for key, value in params.items() if value not in (None, "")}

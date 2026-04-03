@@ -58,3 +58,25 @@ class MarkdownSummaryResponse(BaseModel):
     markdown: str
     generated_at: datetime
 
+
+class ManualRedditCommentInput(BaseModel):
+    body: str
+    author: str | None = None
+    created_at: datetime | None = None
+    score: float | None = None
+
+
+class ManualRedditThreadInput(BaseModel):
+    url: str
+    community: str
+    title: str
+    body: str
+    author: str | None = None
+    created_at: datetime | None = None
+    score: float | None = None
+    comments_count: int | None = None
+    comments: list[ManualRedditCommentInput] = Field(default_factory=list)
+
+
+class ManualRedditImportRequest(BaseModel):
+    threads: list[ManualRedditThreadInput]

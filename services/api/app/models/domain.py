@@ -6,12 +6,14 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 
-SourceName = Literal["reddit", "hacker_news", "discourse"]
+SourceName = Literal["reddit", "hacker_news", "discourse", "stack_exchange", "rss_generic", "html_generic"]
 ContentType = Literal["thread", "comment", "topic", "post", "story"]
+ContentRole = Literal["primary_candidate", "supporting_comment", "background"]
 
 
 class NormalizedItem(BaseModel):
     source: SourceName
+    ingestion_method: str
     community: str
     source_item_id: str
     url: str
@@ -33,6 +35,7 @@ class NormalizedItem(BaseModel):
 
 class IngestionError(BaseModel):
     source: str
+    ingestion_method: str | None = None
     community: str | None = None
     message: str
     metadata: dict[str, Any] = Field(default_factory=dict)
@@ -75,4 +78,6 @@ class AnalysisResult(BaseModel):
     solution_types: list[str] = Field(default_factory=list)
     spam_score: float = 0.0
     is_self_serve_friendly: bool = False
-
+    is_candidate: bool = False
+    candidate_reason: str = ""
+    content_role: ContentRole = "background"
